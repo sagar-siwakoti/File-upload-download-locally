@@ -6,8 +6,9 @@ import java.util.stream.Collectors;
 import com.file.upload.message.ResponseFile;
 import com.file.upload.message.ResponseMessage;
 import com.file.upload.model.File;
-import com.file.upload.service.FileService;
+import com.file.upload.service.FileUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,17 +28,25 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
  */
 
 @Controller
-@CrossOrigin("http://localhost:8081")
+
 public class FileController {
+private FileUploadService fileUploadService;
+
+    public FileController() {
+    }
 
     @Autowired
-    private FileService fileService;
+    public FileController(FileUploadService fileUploadService) {
+        this.fileUploadService = fileUploadService;
+    }
+
+
 
     @PostMapping("/upload")
     public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file) {
         String message = "";
         try {
-            fileService.store(file);
+            fileUploadService.store(file);
 
             message = "Uploaded the file successfully: " + file.getOriginalFilename();
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
@@ -49,7 +58,7 @@ public class FileController {
 
     @GetMapping("/files")
     public ResponseEntity<List<ResponseFile>> getListFiles() {
-        List<ResponseFile> files = fileService.getAllFiles().map(dbFile -> {
+        List<ResponseFile> files = fileUploadService.getAllFiles().map(dbFile -> {
             String fileDownloadUri = ServletUriComponentsBuilder
                     .fromCurrentContextPath()
                     .path("/files/")
@@ -68,7 +77,7 @@ public class FileController {
 
     @GetMapping("/files/{id}")
     public ResponseEntity<byte[]> getFile(@PathVariable String id) {
-        File file = fileService.getFile(id);
+        File file = fileUploadService.getFile(id);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")

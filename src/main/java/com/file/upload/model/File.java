@@ -12,6 +12,8 @@ import org.hibernate.annotations.GenericGenerator;
  * @project file
  * @author Sagar Siwakoti
  */
+@Entity
+@Table(name = "files")
 public class File {
     @Id
     @GeneratedValue(generator = "uuid")
